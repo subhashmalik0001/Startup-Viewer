@@ -36,6 +36,29 @@ const saveUsers = (users) => saveData(DB_FILE, users);
 const getStartups = () => readData(STARTUPS_FILE);
 const saveStartups = (startups) => saveData(STARTUPS_FILE, startups);
 
+// Multer setup for file uploads
+const multer = require('multer');
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(uploadDir));
+
 app.post('/signup', (req, res) => {
     const { email, password, role } = req.body;
 
@@ -121,8 +144,9 @@ app.get('/startups', (req, res) => {
     res.json(startups);
 });
 
-app.post('/startups', (req, res) => {
+app.post('/startups', upload.single('video'), (req, res) => {
     const startupData = req.body;
+    const videoFile = req.file;
 
     // Basic validation
     if (!startupData.name || !startupData.description) {
@@ -130,11 +154,58 @@ app.post('/startups', (req, res) => {
     }
 
     const startups = getStartups();
-    // Generate a simple ID if not provided (though frontend usually doesn't provide it for creation)
+
+    // Parse JSON strings back to objects/arrays if sent as form-data text
+    let tags = [];
+    if (startupData.tags) {
+        try {
+            tags = JSON.parse(startupData.tags);
+        } catch (e) {
+            tags = [startupData.tags];
+        }
+    }
+
+    let hiring = [];
+    if (startupData.hiring) {
+        try {
+            hiring = JSON.parse(startupData.hiring);
+        } catch (e) {
+            hiring = [startupData.hiring];
+        }
+    }
+
+    let team = [];
+    if (startupData.team) {
+        try {
+            team = JSON.parse(startupData.team);
+        } catch (e) {
+            // Fallback default
+            team = [{ name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }];
+        }
+    } else {
+        team = [{ name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }];
+    }
+
+
     const newStartup = {
         ...startupData,
         id: startupData.id || Date.now().toString(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        tags: tags,
+        hiring: hiring,
+        team: team,
+        equity: parseInt(startupData.equity) || 0,
+        fundingAmount: parseInt(startupData.fundingAmount) || 0,
+        verified: startupData.verified === 'true' || startupData.verified === true,
+        isUserCreated: true,
+        stats: {
+            views: 0,
+            swipeRightRatio: 0,
+            investorMatches: 0,
+            talentApplications: 0
+        },
+        // Save video URL if uploaded
+        video: videoFile ? `http://localhost:${PORT}/uploads/${videoFile.filename}` : null
     };
 
     startups.push(newStartup);

@@ -19,11 +19,13 @@ export function FounderDashboard() {
     name: "",
     oneLiner: "",
     description: "",
-    image: "",
+    image: "", // We can keep this for fallback or remove
     askAmount: "",
     equity: "",
     stage: "idea" as "idea" | "mvp" | "scaling",
   })
+  const [videoFile, setVideoFile] = useState<File | null>(null) // New state for video file
+
   const [tags, setTags] = useState<string[]>([])
   const [currentTag, setCurrentTag] = useState("")
   const [hiring, setHiring] = useState<string[]>([])
@@ -54,6 +56,12 @@ export function FounderDashboard() {
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag))
   const removeRole = (role: string) => setHiring(hiring.filter((r) => r !== role))
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setVideoFile(e.target.files[0])
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -64,49 +72,45 @@ export function FounderDashboard() {
 
     setIsSubmitting(true)
 
-    setIsSubmitting(true)
+    // Use FormData for file upload
+    const data = new FormData()
+    data.append("name", formData.name)
+    data.append("oneLiner", formData.oneLiner)
+    data.append("description", formData.description)
+    // Add default image if no video or as persistent fallback
+    data.append("image", "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070")
+    data.append("stage", formData.stage)
+    data.append("equity", formData.equity)
+    data.append("fundingAmount", formData.askAmount?.replace(/[^0-9]/g, "") || "0")
+    if (formData.askAmount) {
+      data.append("ask", `${formData.askAmount} for ${formData.equity}%`)
+    }
 
-    // Construct new startup object
-    // Note: ID will be assigned by backend
-    const newStartupData = {
-      name: formData.name,
-      oneLiner: formData.oneLiner,
-      description: formData.description,
-      image: formData.image || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070",
-      tags: tags,
-      verified: false,
-      ask: formData.askAmount ? `${formData.askAmount} for ${formData.equity}%` : undefined,
-      equity: parseInt(formData.equity) || 0,
-      fundingAmount: parseInt(formData.askAmount?.replace(/[^0-9]/g, "") || "0"),
-      hiring: hiring,
-      stage: formData.stage,
-      team: [
-        { name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }
-      ],
-      stats: {
-        views: 0,
-        swipeRightRatio: 0,
-        investorMatches: 0,
-        talentApplications: 0
-      },
-      isUserCreated: true
+    data.append("tags", JSON.stringify(tags))
+    data.append("hiring", JSON.stringify(hiring))
+    data.append("team", JSON.stringify([{ name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }]))
+    data.append("verified", "false")
+    data.append("isUserCreated", "true")
+
+    if (videoFile) {
+      data.append("video", videoFile)
     }
 
     try {
+      // Note: Do NOT set Content-Type header when using FormData; browser sets it with boundary
       const response = await fetch("http://localhost:4000/startups", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newStartupData)
+        body: data,
       })
 
       if (!response.ok) {
-        throw new Error("Failed to create startup")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to create startup")
       }
 
       const createdStartup = await response.json()
-      addStartup(createdStartup) // Update local store just in case
+      addStartup(createdStartup)
 
-      // Redirect
       alert("Startup Published Successfully! Switching to Swipe View.")
       setCurrentView("swipe")
 
@@ -186,12 +190,14 @@ export function FounderDashboard() {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Image URL (Demo)</Label>
+                    <Label>Pitch Video</Label>
                     <Input
-                      placeholder="https://..."
-                      value={formData.image}
-                      onChange={e => setFormData({ ...formData, image: e.target.value })}
+                      type="file"
+                      accept="video/*"
+                      onChange={handleFileChange}
+                      className="cursor-pointer"
                     />
+                    <p className="text-xs text-muted-foreground">Upload a short pitch video (MP4, max 50MB)</p>
                   </div>
                 </div>
 
@@ -299,7 +305,7 @@ export function FounderDashboard() {
                 </div>
 
                 <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Publishing..." : "Publish Startup"}
+                  {isSubmitting ? "Uploading Video & Publishing..." : "Publish Startup"}
                 </Button>
               </form>
             </CardContent>
@@ -338,7 +344,7 @@ export function FounderDashboard() {
                 <h4 className="font-semibold text-primary">Pro Tip</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                Startups with a video pitch get 3x more matches. Consider adding one later!
+                Great choice! Startups with a video pitch are 3x more likely to get matched with top-tier investors.
               </p>
             </CardContent>
           </Card>

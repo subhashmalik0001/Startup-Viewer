@@ -15,9 +15,10 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
     const { currentView, fetchStartups } = useAppStore()
 
+    // Fetch startups on mount
     useEffect(() => {
-        fetchStartups()
-    }, [fetchStartups])
+        useAppStore.getState().fetchStartups()
+    }, [])
 
     return (
         <div className="flex h-screen w-full bg-background overflow-hidden">

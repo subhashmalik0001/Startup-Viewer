@@ -1,43 +1,14 @@
 [
   {
-    "name": "Subhash",
-    "oneLiner": "hhi ",
-    "description": "hello i am subhash ",
-    "image": "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D",
-    "tags": [],
-    "verified": false,
-    "equity": 0,
-    "fundingAmount": 0,
-    "hiring": [],
-    "stage": "idea",
-    "team": [
-      {
-        "name": "You (Founder)",
-        "role": "CEO",
-        "avatar": "/placeholder.svg"
-      }
-    ],
-    "stats": {
-      "views": 0,
-      "swipeRightRatio": 0,
-      "investorMatches": 0,
-      "talentApplications": 0
-    },
-    "isUserCreated": true,
-    "id": "1767180597256",
-    "createdAt": "2025-12-31T11:29:57.256Z"
-  },
-  {
-    "name": "Real Data Startup",
-    "oneLiner": "Testing persistence.",
-    "description": "This is a real startup saved to the backend.",
+    "name": "TBI",
+    "oneLiner": "TEchnology buisness incubator ",
+    "description": "Pitch ",
     "image": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070",
-    "tags": [],
-    "verified": false,
+    "stage": "idea",
     "equity": 0,
     "fundingAmount": 0,
+    "tags": [],
     "hiring": [],
-    "stage": "idea",
     "team": [
       {
         "name": "You (Founder)",
@@ -45,14 +16,16 @@
         "avatar": "/placeholder.svg"
       }
     ],
+    "verified": false,
+    "isUserCreated": true,
+    "id": "1767187821756",
+    "createdAt": "2025-12-31T13:30:21.757Z",
     "stats": {
       "views": 0,
       "swipeRightRatio": 0,
       "investorMatches": 0,
       "talentApplications": 0
     },
-    "isUserCreated": true,
-    "id": "1767180612475",
-    "createdAt": "2025-12-31T11:30:12.475Z"
+    "video": "http://localhost:4000/uploads/1767187821697-54120398.mp4"
   }
 ]

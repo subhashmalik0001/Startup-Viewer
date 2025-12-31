@@ -9,7 +9,7 @@ export const mockStartups: Startup[] = [
     description:
       "NeuroPay uses advanced machine learning algorithms to analyze transaction patterns and detect fraudulent activities before they happen. Our system processes millions of transactions per second with sub-millisecond latency.",
     image: "/futuristic-fintech-app-with-neural-network-visuali.jpg",
-    videoUrl: "/demo.mp4",
+    video: "/demo.mp4",
     tags: ["Fintech", "AI", "Security"],
     verified: true,
     ask: "$2M for 8%",

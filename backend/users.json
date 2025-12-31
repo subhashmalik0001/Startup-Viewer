@@ -28,5 +28,11 @@
     "email": "subhashmalik100a0@gmail.com",
     "password": "Subh@123",
     "role": "investor"
+  },
+  {
+    "id": "1767185685668",
+    "email": "user2@examples.com",
+    "password": "Subh@123",
+    "role": "investor"
   }
 ]
