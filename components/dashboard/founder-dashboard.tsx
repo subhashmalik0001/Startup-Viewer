@@ -116,7 +116,7 @@ export function FounderDashboard() {
 
     } catch (error) {
       console.error(error)
-      alert("Failed to publish startup. Please try again.")
+      alert(error instanceof Error ? error.message : "Failed to publish startup")
     } finally {
       setIsSubmitting(false)
     }

@@ -1,202 +1,201 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
+const multer = require('multer');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const app = express();
-const PORT = 4000;
-const DB_FILE = path.join(__dirname, 'users.json');
-const STARTUPS_FILE = path.join(__dirname, 'startups.json');
+const PORT = process.env.PORT || 4000;
 
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Helper to read data
-const readData = (filePath) => {
-    if (!fs.existsSync(filePath)) {
-        return [];
-    }
-    const data = fs.readFileSync(filePath);
-    try {
-        return JSON.parse(data);
-    } catch (e) {
-        return [];
-    }
-};
+// Supabase Configuration
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Helper to save data
-const saveData = (filePath, data) => {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-};
-
-const getUsers = () => readData(DB_FILE);
-const saveUsers = (users) => saveData(DB_FILE, users);
-
-const getStartups = () => readData(STARTUPS_FILE);
-const saveStartups = (startups) => saveData(STARTUPS_FILE, startups);
-
-// Multer setup for file uploads
-const multer = require('multer');
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
+// Multer Setup
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(uploadDir));
+// --- ROUTES ---
 
-app.post('/signup', (req, res) => {
+// Signup Endpoint
+app.post('/signup', async (req, res) => {
     const { email, password, role } = req.body;
 
     if (!email || !password || !role) {
-        return res.status(400).json({ error: 'Missing required fields' });
+        return res.status(400).json({ message: "Email, password, and role are required." });
     }
 
-    const users = getUsers();
-    if (users.find(u => u.email === email)) {
-        return res.status(400).json({ error: 'User already exists' });
+    try {
+        // Check if user exists
+        const { data: existingUser, error: searchError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+        if (existingUser) {
+            return res.status(400).json({ message: "User already exists." });
+        }
+
+        // Insert new user
+        const { data: newUser, error: insertError } = await supabase
+            .from('users')
+            .insert([{ email, password, role }]) // Note: In production, hash passwords!
+            .select()
+            .single();
+
+        if (insertError) {
+            throw insertError;
+        }
+
+        res.status(201).json({ message: "User created successfully", user: newUser });
+    } catch (error) {
+        console.error("Signup error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    const newUser = { id: Date.now().toString(), email, password, role };
-    users.push(newUser);
-    saveUsers(users);
-
-    console.log(`User registered: ${email}`);
-    res.status(201).json({ message: 'User created successfully', user: { id: newUser.id, email: newUser.email, role: newUser.role } });
 });
 
-app.post('/login', (req, res) => {
+// Login Endpoint
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ error: 'Missing credentials' });
+        return res.status(400).json({ message: "Email and password are required." });
     }
 
-    const users = getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .eq('password', password) // Note: In production, compare hashed passwords!
+            .single();
 
-    if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        if (error || !user) {
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        res.status(200).json({ message: "Login successful", user });
+    } catch (error) {
+        console.error("Login error:", error);
+        if (error.code === 'PGRST116') { // No rows found (JSON object requested, multiple (or no) rows returned)
+            return res.status(401).json({ message: "Invalid email or password" });
+        }
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    console.log(`User logged in: ${email}`);
-    res.json({ user: { id: user.id, email: user.email, role: user.role } });
 });
 
-// User Profile API
-app.get('/users/:id/profile', (req, res) => {
-    const { id } = req.params;
-    const users = getUsers();
-    const user = users.find(u => u.id === id);
+// Get User Profile
+app.get('/users/:id', async (req, res) => {
+    try {
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', req.params.id)
+            .single();
 
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        if (error || !user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const userWithProfile = {
+            ...user,
+        };
+
+        res.json(userWithProfile);
+    } catch (error) {
+        console.error("Fetch user error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    // Return profile or defaults if not set
-    const defaultProfile = {
-        title: "New Member",
-        location: "Unknown",
-        bio: "No bio yet.",
-        skills: [],
-        timezone: "UTC",
-        availability: "Open to Connect"
-    };
-
-    res.json(user.profile || defaultProfile);
 });
 
-app.put('/users/:id/profile', (req, res) => {
-    const { id } = req.params;
-    const profileData = req.body;
+// Get All Startups
+app.get('/startups', async (req, res) => {
+    try {
+        const { data: startups, error } = await supabase
+            .from('startups')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    const users = getUsers();
-    const userIndex = users.findIndex(u => u.id === id);
+        if (error) throw error;
 
-    if (userIndex === -1) {
-        return res.status(404).json({ error: 'User not found' });
+        res.json(startups);
+    } catch (error) {
+        console.error("Fetch startups error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
-
-    users[userIndex].profile = { ...users[userIndex].profile, ...profileData };
-    saveUsers(users);
-
-    console.log(`Updated profile for user ${id}`);
-    res.json(users[userIndex].profile);
 });
 
-// Startups API
-app.get('/startups', (req, res) => {
-    const startups = getStartups();
-    res.json(startups);
-});
-
-app.post('/startups', upload.single('video'), (req, res) => {
+// Create Startup Endpoint
+app.post('/startups', upload.single('video'), async (req, res) => {
     const startupData = req.body;
     const videoFile = req.file;
 
-    // Basic validation
-    if (!startupData.name || !startupData.description) {
-        return res.status(400).json({ error: 'Missing required fields' });
+    // Parse JSON strings back to objects/arrays (FormData sends them as strings)
+    let parsedTags = [], parsedHiring = [], parsedTeam = [];
+    try {
+        if (startupData.tags) parsedTags = JSON.parse(startupData.tags);
+        if (startupData.hiring) parsedHiring = JSON.parse(startupData.hiring);
+        if (startupData.team) parsedTeam = JSON.parse(startupData.team);
+    } catch (e) {
+        console.error("JSON parse error", e);
     }
 
-    const startups = getStartups();
-
-    // Parse JSON strings back to objects/arrays if sent as form-data text
-    let tags = [];
-    if (startupData.tags) {
+    // Upload Video to Supabase Storage
+    let videoUrl = null;
+    if (videoFile) {
         try {
-            tags = JSON.parse(startupData.tags);
-        } catch (e) {
-            tags = [startupData.tags];
+            // Generate unique filename
+            const fileExt = path.extname(videoFile.originalname) || ".mp4";
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}${fileExt}`;
+
+            // Upload to Supabase 'videos' bucket
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('videos')
+                .upload(fileName, videoFile.buffer, {
+                    contentType: videoFile.mimetype,
+                    upsert: false
+                });
+
+            if (uploadError) {
+                console.error("Supabase Storage Upload Error:", uploadError);
+                throw uploadError;
+            }
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase
+                .storage
+                .from('videos')
+                .getPublicUrl(fileName);
+
+            videoUrl = publicUrl;
+        } catch (uploadErr) {
+            console.error("Failed to upload video:", uploadErr);
+            return res.status(500).json({ message: "Failed to upload video file." });
         }
     }
-
-    let hiring = [];
-    if (startupData.hiring) {
-        try {
-            hiring = JSON.parse(startupData.hiring);
-        } catch (e) {
-            hiring = [startupData.hiring];
-        }
-    }
-
-    let team = [];
-    if (startupData.team) {
-        try {
-            team = JSON.parse(startupData.team);
-        } catch (e) {
-            // Fallback default
-            team = [{ name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }];
-        }
-    } else {
-        team = [{ name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }];
-    }
-
 
     const newStartup = {
-        ...startupData,
-        id: startupData.id || Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        tags: tags,
-        hiring: hiring,
-        team: team,
-        equity: parseInt(startupData.equity) || 0,
-        fundingAmount: parseInt(startupData.fundingAmount) || 0,
-        verified: startupData.verified === 'true' || startupData.verified === true,
+        name: startupData.name,
+        oneLiner: startupData.oneLiner,
+        description: startupData.description,
+        image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070", // Placeholder
+        stage: startupData.stage || "idea",
+        equity: Number(startupData.equity) || 0,
+        fundingAmount: Number(startupData.fundingAmount) || 0,
+        tags: parsedTags,
+        hiring: parsedHiring,
+        team: parsedTeam,
+        verified: false,
         isUserCreated: true,
         stats: {
             views: 0,
@@ -204,17 +203,28 @@ app.post('/startups', upload.single('video'), (req, res) => {
             investorMatches: 0,
             talentApplications: 0
         },
-        // Save video URL if uploaded
-        video: videoFile ? `http://localhost:${PORT}/uploads/${videoFile.filename}` : null
+        pitch_video_url: videoUrl
     };
 
-    startups.push(newStartup);
-    saveStartups(startups);
+    try {
+        const { data, error } = await supabase
+            .from('startups')
+            .insert([newStartup])
+            .select()
+            .single();
 
-    console.log(`Startup created: ${newStartup.name}`);
-    res.status(201).json(newStartup);
+        if (error) {
+            console.error("Supabase Insert Error:", error);
+            throw error;
+        }
+
+        res.status(201).json(data);
+    } catch (error) {
+        console.error("Create startup error:", error);
+        res.status(500).json({ message: "Failed to save startup to database." });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Backend server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });

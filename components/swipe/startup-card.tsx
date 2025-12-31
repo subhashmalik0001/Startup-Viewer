@@ -57,9 +57,9 @@ export function StartupCard({ startup, onSwipeLeft, onSwipeRight, onSuperLike, o
       <motion.div className="absolute inset-0 rounded-3xl glow-red pointer-events-none z-50" style={{ opacity: redGlow }} />
 
       <div className="relative w-full h-full bg-black overflow-hidden">
-        {startup.video ? (
+        {startup.pitch_video_url ? (
           <video
-            src={startup.video}
+            src={startup.pitch_video_url}
             className="absolute inset-0 w-full h-full object-cover"
             autoPlay
             loop
@@ -69,14 +69,6 @@ export function StartupCard({ startup, onSwipeLeft, onSwipeRight, onSuperLike, o
         ) : (
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${startup.image})` }} />
         )}
-
-        {/* Minimal gradient for depth if needed, but keeping it clean for 'video only' */}
-        {/* <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" /> */}
-
-        {/* Optional: Verified Badge - keeping it very subtle or removing if strict "only video". 
-            User said "only the video not show other info like startup info and all" 
-            I will remove it to be safe and strictly follow "only the video" 
-        */}
       </div>
     </motion.div>
   )

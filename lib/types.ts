@@ -13,7 +13,7 @@ export interface Startup {
   oneLiner: string
   description: string
   image: string
-  video?: string // URL to video file
+  pitch_video_url?: string // URL to video file
   ask?: string
   equity: number
   fundingAmount: number
