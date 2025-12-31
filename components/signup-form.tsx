@@ -59,7 +59,7 @@ export function SignupForm({ className, ...props }: SignupFormProps) {
 
         try {
             // 1. Register user in backend
-            const response = await fetch("http://localhost:4000/signup", {
+            const response = await fetch("https://swip-backend-pp4l.onrender.com/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),

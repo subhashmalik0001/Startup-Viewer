@@ -29,7 +29,6 @@ interface AppState {
   setInvestorStatus: (status: AppState["investorStatus"]) => void
   addStartup: (startup: Startup) => void
   fetchStartups: () => Promise<void>
-  fetchStartups: () => Promise<void>
   userProfile: UserProfile
   fetchUserProfile: (userId: string) => Promise<void>
   saveUserProfile: (userId: string, profile: Partial<UserProfile>) => Promise<void>
@@ -54,7 +53,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   fetchUserProfile: async (userId) => {
     try {
-      const response = await fetch(`http://localhost:4000/users/${userId}/profile`);
+      const response = await fetch(`https://swip-backend-pp4l.onrender.com/users/${userId}/profile`);
       if (response.ok) {
         const data = await response.json();
         set({ userProfile: data });
@@ -66,7 +65,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   saveUserProfile: async (userId, profile) => {
     try {
-      const response = await fetch(`http://localhost:4000/users/${userId}/profile`, {
+      const response = await fetch(`https://swip-backend-pp4l.onrender.com/users/${userId}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile)
@@ -91,7 +90,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   fetchStartups: async () => {
     try {
-      const response = await fetch("http://localhost:4000/startups");
+      const response = await fetch("https://swip-backend-pp4l.onrender.com/startups");
       if (response.ok) {
         const data = await response.json();
         // Optional: If no data, maybe fallback to mock or stay empty

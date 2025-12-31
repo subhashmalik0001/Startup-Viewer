@@ -26,6 +26,8 @@ export function StartupCard({ startup, onSwipeLeft, onSwipeRight, onSuperLike, o
   const greenGlow = useTransform(x, [0, 150], [0, 1])
   const redGlow = useTransform(x, [-150, 0], [1, 0])
 
+  const [isMuted, setIsMuted] = useState(false)
+
   const handleDragEnd = (_: unknown, info: PanInfo) => {
     const threshold = 100
     if (info.offset.x > threshold) {
@@ -56,16 +58,32 @@ export function StartupCard({ startup, onSwipeLeft, onSwipeRight, onSuperLike, o
       />
       <motion.div className="absolute inset-0 rounded-3xl glow-red pointer-events-none z-50" style={{ opacity: redGlow }} />
 
-      <div className="relative w-full h-full bg-black overflow-hidden">
+      <div className="relative w-full h-full bg-black overflow-hidden group">
         {startup.pitch_video_url ? (
-          <video
-            src={startup.pitch_video_url}
-            className="absolute inset-0 w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
+          <>
+            <video
+              src={startup.pitch_video_url}
+              className="absolute inset-0 w-full h-full object-cover"
+              autoPlay
+              loop
+              muted={isMuted} // Controlled by state
+              playsInline
+            />
+            {/* Volume Toggle Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsMuted(!isMuted)
+              }}
+              className="absolute bottom-6 right-6 p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 transition-colors z-[60]"
+            >
+              {isMuted ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
+              )}
+            </button>
+          </>
         ) : (
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${startup.image})` }} />
         )}

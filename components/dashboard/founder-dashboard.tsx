@@ -98,7 +98,7 @@ export function FounderDashboard() {
 
     try {
       // Note: Do NOT set Content-Type header when using FormData; browser sets it with boundary
-      const response = await fetch("http://localhost:4000/startups", {
+      const response = await fetch("https://swip-backend-pp4l.onrender.com/startups", {
         method: "POST",
         body: data,
       })

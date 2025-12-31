@@ -41,7 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const { email, password } = parsedCredentials.data
 
           try {
-            const response = await fetch("http://localhost:4000/login", {
+            const response = await fetch("https://swip-backend-pp4l.onrender.com/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
