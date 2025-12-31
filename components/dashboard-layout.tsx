@@ -30,7 +30,7 @@ export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
             <Sidebar />
 
             {/* Main Content Area */}
-            <main className="flex-1 pl-20 transition-all duration-300">
+            <main className="flex-1 md:pl-20 pb-20 md:pb-0 transition-all duration-300">
                 <div className="h-full w-full overflow-y-auto">
                     {children}
                 </div>
