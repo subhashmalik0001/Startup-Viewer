@@ -10,15 +10,19 @@ import { useAppStore } from "@/lib/store"
 
 interface DashboardLayoutProps {
     children: ReactNode
+    userRole?: "founder" | "investor" | "viewer"
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { fetchStartups } = useAppStore()
+export function DashboardLayout({ children, userRole }: DashboardLayoutProps) {
+    const { fetchStartups, setRole } = useAppStore()
 
     // Fetch startups on mount
     useEffect(() => {
         useAppStore.getState().fetchStartups()
-    }, [])
+        if (userRole) {
+            useAppStore.setState({ role: userRole })
+        }
+    }, [userRole])
 
     return (
         <div className="flex h-screen w-full bg-background overflow-hidden">

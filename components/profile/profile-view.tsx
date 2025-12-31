@@ -38,12 +38,6 @@ export function ProfileView() {
       {/* Header Breadcrumb or Title */}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setRole(role === "founder" ? "investor" : "founder")}>
-            Switch to {role === "founder" ? "Investor" : "Founder"} View
-          </Button>
-          <Button onClick={() => setIsEditDialogOpen(true)}>Edit Profile</Button>
-        </div>
       </div>
 
       <EditProfileDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />

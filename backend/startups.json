@@ -27,5 +27,63 @@
       "talentApplications": 0
     },
     "video": "http://localhost:4000/uploads/1767187821697-54120398.mp4"
+  },
+  {
+    "name": "Insagram ",
+    "oneLiner": "Insgram video ",
+    "description": "Video Demo ",
+    "image": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070",
+    "stage": "idea",
+    "equity": 0,
+    "fundingAmount": 0,
+    "tags": [],
+    "hiring": [],
+    "team": [
+      {
+        "name": "You (Founder)",
+        "role": "CEO",
+        "avatar": "/placeholder.svg"
+      }
+    ],
+    "verified": false,
+    "isUserCreated": true,
+    "id": "1767189063810",
+    "createdAt": "2025-12-31T13:51:03.810Z",
+    "stats": {
+      "views": 0,
+      "swipeRightRatio": 0,
+      "investorMatches": 0,
+      "talentApplications": 0
+    },
+    "video": "http://localhost:4000/uploads/1767189063798-167842769.mp4"
+  },
+  {
+    "name": "Code ",
+    "oneLiner": "Coding Platform ",
+    "description": "Platfrom ",
+    "image": "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070",
+    "stage": "idea",
+    "equity": 0,
+    "fundingAmount": 0,
+    "tags": [],
+    "hiring": [],
+    "team": [
+      {
+        "name": "You (Founder)",
+        "role": "CEO",
+        "avatar": "/placeholder.svg"
+      }
+    ],
+    "verified": false,
+    "isUserCreated": true,
+    "id": "1767189936084",
+    "createdAt": "2025-12-31T14:05:36.084Z",
+    "stats": {
+      "views": 0,
+      "swipeRightRatio": 0,
+      "investorMatches": 0,
+      "talentApplications": 0
+    },
+    "video": "http://localhost:4000/uploads/1767189936073-757472384.mp4"
   }
 ]

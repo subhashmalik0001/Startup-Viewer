@@ -8,7 +8,7 @@ export default async function DashboardPage() {
     const role = session?.user?.role || "viewer"
 
     return (
-        <DashboardLayout>
+        <DashboardLayout userRole={role}>
             {role === "investor" ? (
                 <InvestorDashboard />
             ) : role === "founder" ? (

@@ -34,5 +34,23 @@
     "email": "user2@examples.com",
     "password": "Subh@123",
     "role": "investor"
+  },
+  {
+    "id": "1767189626817",
+    "email": "subhashmalik10000@gmail.com",
+    "password": "Subh@123",
+    "role": "investor"
+  },
+  {
+    "id": "1767189978962",
+    "email": "24BCS10409@cuchd.in",
+    "password": "Subh@12345",
+    "role": "founder"
+  },
+  {
+    "id": "1767195293249",
+    "email": "24BCS10408@cuchd.in",
+    "password": "Subh@12434",
+    "role": "investor"
   }
 ]
