@@ -11,19 +11,26 @@ import { X, Plus } from "lucide-react"
 import { useAppStore } from "@/lib/store"
 import { UserProfile } from "@/lib/types"
 
+import { useSession } from "next-auth/react"
+
 interface EditProfileDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
 }
 
 export function EditProfileDialog({ open, onOpenChange }: EditProfileDialogProps) {
-    const { userProfile, updateUserProfile } = useAppStore()
+    const { userProfile, saveUserProfile } = useAppStore()
+    const { data: session } = useSession()
     const [formData, setFormData] = useState<UserProfile>(userProfile)
     const [currentSkill, setCurrentSkill] = useState("")
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        updateUserProfile(formData)
+        // @ts-ignore
+        if (session?.user?.id) {
+            // @ts-ignore
+            await saveUserProfile(session.user.id, formData)
+        }
         onOpenChange(false)
     }
 

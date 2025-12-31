@@ -54,7 +54,7 @@ export function FounderDashboard() {
   const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag))
   const removeRole = (role: string) => setHiring(hiring.filter((r) => r !== role))
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (formData.stage === "scaling" && !registrationNumber) {
@@ -64,40 +64,58 @@ export function FounderDashboard() {
 
     setIsSubmitting(true)
 
-    // Simulate API delay
-    setTimeout(() => {
-      const newStartup: Startup = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: formData.name,
-        oneLiner: formData.oneLiner,
-        description: formData.description,
-        image: formData.image || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070", // Default fallback
-        tags: tags,
-        verified: false, // Default unverified
-        ask: formData.askAmount ? `${formData.askAmount} for ${formData.equity}%` : undefined,
-        equity: parseInt(formData.equity) || 0,
-        fundingAmount: parseInt(formData.askAmount?.replace(/[^0-9]/g, "") || "0"),
-        hiring: hiring,
-        stage: formData.stage,
-        team: [
-          { name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" } // Placeholder
-        ],
-        stats: {
-          views: 0,
-          swipeRightRatio: 0,
-          investorMatches: 0,
-          talentApplications: 0
-        },
-        isUserCreated: true
+    setIsSubmitting(true)
+
+    // Construct new startup object
+    // Note: ID will be assigned by backend
+    const newStartupData = {
+      name: formData.name,
+      oneLiner: formData.oneLiner,
+      description: formData.description,
+      image: formData.image || "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&q=80&w=2070",
+      tags: tags,
+      verified: false,
+      ask: formData.askAmount ? `${formData.askAmount} for ${formData.equity}%` : undefined,
+      equity: parseInt(formData.equity) || 0,
+      fundingAmount: parseInt(formData.askAmount?.replace(/[^0-9]/g, "") || "0"),
+      hiring: hiring,
+      stage: formData.stage,
+      team: [
+        { name: "You (Founder)", role: "CEO", avatar: "/placeholder.svg" }
+      ],
+      stats: {
+        views: 0,
+        swipeRightRatio: 0,
+        investorMatches: 0,
+        talentApplications: 0
+      },
+      isUserCreated: true
+    }
+
+    try {
+      const response = await fetch("http://localhost:4000/startups", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newStartupData)
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create startup")
       }
 
-      addStartup(newStartup)
-      setIsSubmitting(false)
-      // Redirect to profile or swipe to see it? Maybe landing for now or stay here with success message
-      // ideally we switch to profile to see "My Startups" if implemented, but let's go to Swipe to verify
-      alert("Startup Published! Switching to Swipe View to verify.")
+      const createdStartup = await response.json()
+      addStartup(createdStartup) // Update local store just in case
+
+      // Redirect
+      alert("Startup Published Successfully! Switching to Swipe View.")
       setCurrentView("swipe")
-    }, 1500)
+
+    } catch (error) {
+      console.error(error)
+      alert("Failed to publish startup. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

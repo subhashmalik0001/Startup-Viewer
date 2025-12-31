@@ -28,8 +28,12 @@ interface AppState {
   investorStatus: "unverified" | "pending" | "verified"
   setInvestorStatus: (status: AppState["investorStatus"]) => void
   addStartup: (startup: Startup) => void
+  fetchStartups: () => Promise<void>
+  fetchStartups: () => Promise<void>
   userProfile: UserProfile
-  updateUserProfile: (profile: Partial<UserProfile>) => void
+  fetchUserProfile: (userId: string) => Promise<void>
+  saveUserProfile: (userId: string, profile: Partial<UserProfile>) => Promise<void>
+  updateUserProfile: (profile: Partial<UserProfile>) => void // Keep for local optimistic updates
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -38,21 +42,69 @@ export const useAppStore = create<AppState>((set, get) => ({
   currentView: "landing",
   setCurrentView: (view) => set({ currentView: view }),
   userProfile: {
-    title: "Serial Entrepreneur",
-    location: "San Francisco, CA",
-    bio: "Building the next big thing. Passionate about AI and Fintech.",
-    skills: ["React", "Node.js", "AI", "SaaS"],
-    timezone: "UTC-8 (PST)",
-    availability: "Open to Connect"
-  },
+    title: "",
+    location: "",
+    bio: "",
+    skills: [],
+    timezone: "",
+    availability: ""
+  }, // Empty default
+
   updateUserProfile: (profile) => set((state) => ({ userProfile: { ...state.userProfile, ...profile } })),
-  startups: mockStartups,
+
+  fetchUserProfile: async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:4000/users/${userId}/profile`);
+      if (response.ok) {
+        const data = await response.json();
+        set({ userProfile: data });
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile:", error);
+    }
+  },
+
+  saveUserProfile: async (userId, profile) => {
+    try {
+      const response = await fetch(`http://localhost:4000/users/${userId}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        set({ userProfile: data });
+      }
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+    }
+  },
+  startups: [], // Start empty, fetch real data
   currentStartupIndex: 0,
   likedStartups: [],
   bookmarkedStartups: [],
   investorStatus: "unverified",
   setInvestorStatus: (status) => set({ investorStatus: status }),
+
   addStartup: (startup) => set((state) => ({ startups: [...state.startups, startup] })),
+
+  fetchStartups: async () => {
+    try {
+      const response = await fetch("http://localhost:4000/startups");
+      if (response.ok) {
+        const data = await response.json();
+        // Optional: If no data, maybe fallback to mock or stay empty
+        if (Array.isArray(data) && data.length > 0) {
+          set({ startups: data });
+        } else {
+          set({ startups: [] })
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch startups:", error);
+    }
+  },
 
   bookmark: () => {
     const { currentStartupIndex, startups, bookmarkedStartups } = get()

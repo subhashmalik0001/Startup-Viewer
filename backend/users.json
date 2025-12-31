@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1767179310054",
+    "email": "subhashmalik1000@gmail.com",
+    "password": "Subh@123",
+    "role": "founder"
+  },
+  {
+    "id": "1767179348785",
+    "email": "user2@example.com",
+    "password": "password123",
+    "role": "investor"
+  },
+  {
+    "id": "1767179651465",
+    "email": "productstudio@cumail.in",
+    "password": "Subh@123",
+    "role": "founder"
+  },
+  {
+    "id": "1767179697593",
+    "email": "founder1@test.com",
+    "password": "password123",
+    "role": "founder"
+  },
+  {
+    "id": "1767180288176",
+    "email": "subhashmalik100a0@gmail.com",
+    "password": "Subh@123",
+    "role": "investor"
+  }
+]

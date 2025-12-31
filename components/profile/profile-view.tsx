@@ -14,14 +14,24 @@ import { EngagementChart, RecruitmentFunnel, StatCard } from "./analytics-widget
 import { useSession } from "next-auth/react"
 import { EditProfileDialog } from "./edit-profile-dialog"
 
+import { useEffect } from "react"
+
 export function ProfileView() {
-  const { role, setRole, likedStartups, bookmarkedStartups, startups, setCurrentView, userProfile } = useAppStore()
+  const { role, setRole, likedStartups, bookmarkedStartups, startups, setCurrentView, userProfile, fetchUserProfile } = useAppStore()
   const { data: session } = useSession()
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-  const displayName = session?.user?.name || "John Doe"
-  const displayEmail = session?.user?.email || "john@acme.co"
-  const displayImage = session?.user?.image || "/professional-headshot.png"
+  const displayName = session?.user?.name || session?.user?.email?.split('@')[0] || "User"
+  const displayEmail = session?.user?.email || ""
+  const displayImage = session?.user?.image || "/unique-profile-pic.png" // Fallback
+
+  useEffect(() => {
+    // @ts-ignore
+    if (session?.user?.id) {
+      // @ts-ignore
+      fetchUserProfile(session.user.id)
+    }
+  }, [session, fetchUserProfile])
 
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-[1400px] mx-auto h-full overflow-y-auto pb-24">
