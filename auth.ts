@@ -1,6 +1,19 @@
-import NextAuth from "next-auth"
+import NextAuth, { type DefaultSession } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
+import type { UserRole, UserProfile } from "./lib/types"
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      role: UserRole
+    } & DefaultSession["user"]
+  }
+  interface User {
+    role: UserRole
+    profile?: UserProfile
+  }
+}
 
 async function getUser(email: string): Promise<any> {
   // Mock user retrieval - in a real app, this would fetch from a database

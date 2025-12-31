@@ -4,13 +4,22 @@ import type { NextRequest } from "next/server"
 
 export default auth((req) => {
     const isLoggedIn = !!req.auth
-    const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard")
-    if (isOnDashboard) {
+    const { pathname } = req.nextUrl
+
+    // Protected routes pattern
+    const isProtectedRoute =
+        pathname.startsWith("/dashboard") ||
+        pathname.startsWith("/home") ||
+        pathname.startsWith("/search") ||
+        pathname.startsWith("/profile") ||
+        pathname.startsWith("/founderdetails")
+
+    if (isProtectedRoute) {
         if (isLoggedIn) return
         return Response.redirect(new URL("/login", req.nextUrl))
-    } else if (isLoggedIn) {
-        // Optional: Redirect to dashboard if already logged in and visiting home/login
-        // return Response.redirect(new URL("/dashboard", req.nextUrl))
+    } else if (isLoggedIn && (pathname === "/" || pathname === "/login" || pathname === "/signup")) {
+        // Redirect to home if already logged in
+        return Response.redirect(new URL("/home", req.nextUrl))
     }
     return
 })
