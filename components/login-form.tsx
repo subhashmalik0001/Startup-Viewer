@@ -49,7 +49,7 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
         try {
             // 1. Check credentials and get role from backend first
-            const response = await fetch("https://foundy-backend.onrender.com/login", {
+            const response = await fetch("https://swip-backend-pp4l.onrender.com/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(values),
